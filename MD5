@@ -1,4 +1,4 @@
-61e826e31452dea147ad6354712acae3 *DESCRIPTION
+14de0d31b899d3bbb23ce815d516bd2a *DESCRIPTION
 02fd284e0e729b578a83bb8d40f893f5 *NAMESPACE
 35e860d8ba6d1b3298044cca1d609e98 *R/BackTest.R
 cee08942d661c0677849cf7258c7d4c2 *R/ClassMethods.R
@@ -19,7 +19,7 @@ cb8ec4e721c95532b29cc2f8f9e4baa9 *R/Simulate.R
 bee02f3c5f84642b02ffa38d15f833c4 *R/StartingValues.R
 e7ea5d3799def163bbf1fdf46ac756c8 *R/Testing.R
 8dfdf23e1248746ecffa46120658b818 *R/Utils.R
-973d5b3af1d8ee3fc920fcd28067d387 *build/partial.rdb
+13213c14cf462e7592ed3fd689ae2e62 *build/partial.rdb
 77a6581503b210d58783e132441d725c *build/vignette.rds
 f3ac0d2cfd505c3ce9b6d8de9b4c3c5f *data/StockIndices.rda
 180b4c3ad7f4e04a941e580c4010a64f *data/cpichg.rda
@@ -31,7 +31,7 @@ cb54ab207478b323aa28c58a7a14ea54 *data/usunp.rda
 4488671bf63cf8170995432207e93b3c *inst/doc/AddNewDistribution.Rnw
 056c6633c90160c7946624b641960050 *inst/doc/AddNewDistribution.pdf
 75a53515366ea3f0e558544a875c5328 *inst/doc/GAS_vignette_0.1.1.Rnw
-f9b609c092c9a41e0904cbc4a6e8e5f0 *inst/doc/GAS_vignette_0.1.1.pdf
+6a79ac8e24dc171bdbc5925403a694b2 *inst/doc/GAS_vignette_0.1.1.pdf
 cc673a64217fe0eb0778d515a5acb8c1 *inst/test/Estimate.R
 093594156dd5683a367e471472fdb30e *inst/test/Filter_R.R
 443b388753b5b3ed90cb26c82927ac0d *inst/test/Forecast.R
@@ -46,7 +46,7 @@ a4497a60ff7f3c3c588c881812ab9b66 *man/BacktestVaR.Rd
 d3e734800f974817881dbc42f9fb85dd *man/ConfidenceBands.Rd
 0e5643faa766b0c8849a7ea8b61819f4 *man/DistInfo.Rd
 740226985e7c1f927857873b18c10de8 *man/Distributions.Rd
-abed5bf081d69c44534e7701d9f9b521 *man/GAS-package.Rd
+83077578a7791edbf35ed7e1e71eaccc *man/GAS-package.Rd
 e00e220b9975d20838b1b37dc2b32c32 *man/MultiGASFit.Rd
 729dcf0c5cfdd83546b0e7b4f097416d *man/MultiGASFor.Rd
 66dc0efd214497336374847dc9790fd1 *man/MultiGASRoll.Rd
@@ -82,7 +82,7 @@ b69cbdf948eade307f3eef358b599a0b *man/usunp.Rd
 d8deb4865da4ce4809fefc31cdcd7679 *src/Density.cpp
 53038af23b5f6d52faad5b087eb42a95 *src/DistWrap.cpp
 885031bb6094afadd9115ba394eeb0c2 *src/DistWrap.h
-bffb598f859980e34e9ff20f7c32b0b2 *src/Filters.cpp
+7d2edde77c2fa4ffccd765962c700e67 *src/Filters.cpp
 d1864b9c3f1d8fad67bc36a3f60b12cb *src/Forecast.cpp
 38da1e9da32266eb608a6954212e1ce9 *src/GASInnovation.cpp
 0dd66c85cc5dff518891e2cea568d954 *src/GASInnovation.h
