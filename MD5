@@ -1,5 +1,5 @@
-0820142b92770fbacfd32b36fb03187f *DESCRIPTION
-df66fcc2af24d7368d4d649eacfefce7 *NAMESPACE
+1fe0f220ec827546335607e66e671077 *DESCRIPTION
+89b85c2c0198bd5e7662501cf63cdda3 *NAMESPACE
 35e860d8ba6d1b3298044cca1d609e98 *R/BackTest.R
 4bdd098967ddca3cb8d92f4de3801b37 *R/ClassMethods.R
 fc19f63bbc935164041cd94a0f88202e *R/ConfidenceBands.R
@@ -20,8 +20,8 @@ cf0f1d004c586ee5507492ee14572f65 *R/OptimiserWrap.R
 bee02f3c5f84642b02ffa38d15f833c4 *R/StartingValues.R
 4e8210b22f4f1dd9bb38bc1fe2ba7201 *R/Testing.R
 6bd82ee72a65dd5473ae4ff814d35fa8 *R/Utils.R
-fa7e89493bd6ba0df05dda062eb9c241 *build/partial.rdb
-77a6581503b210d58783e132441d725c *build/vignette.rds
+32ba856fae4ad2ed1ca26f6f5fe8c389 *build/partial.rdb
+9c1bbd3b4d676c3a8c03417ca2e7df72 *build/vignette.rds
 f3ac0d2cfd505c3ce9b6d8de9b4c3c5f *data/StockIndices.rda
 180b4c3ad7f4e04a941e580c4010a64f *data/cpichg.rda
 691e4e12abd5def456ed071418e93cf3 *data/dji30ret.rda
@@ -30,9 +30,9 @@ ce5f2b0fb1880f77af1f4e4bb8912ead *data/sp500rv.rda
 a0e817f973074fc1918ec63e55c9688f *data/tqdata.rda
 cb54ab207478b323aa28c58a7a14ea54 *data/usunp.rda
 4488671bf63cf8170995432207e93b3c *inst/doc/AddNewDistribution.Rnw
-056c6633c90160c7946624b641960050 *inst/doc/AddNewDistribution.pdf
-75a53515366ea3f0e558544a875c5328 *inst/doc/GAS_vignette_0.1.1.Rnw
-ae206d187ef6490dc2beaba05ef39233 *inst/doc/GAS_vignette_0.1.1.pdf
+c3177b708fd3664de3daf3c6a85721ff *inst/doc/AddNewDistribution.pdf
+b7e4d3dc63ff45aac4f1207fd181a757 *inst/doc/GAS_vignette_0.1.4.Rnw
+0bc27c3532d0532856009aedcb98c6bd *inst/doc/GAS_vignette_0.1.4.pdf
 cc673a64217fe0eb0778d515a5acb8c1 *inst/test/Estimate.R
 093594156dd5683a367e471472fdb30e *inst/test/Filter_R.R
 6b028512aefb8ec6945c8f0df02c4559 *inst/test/Forecast.R
@@ -47,9 +47,9 @@ cd15e16d9ce24c96ae3d40df664f8ec6 *man/BacktestDensity.Rd
 41f7255b7ddebe4ca22732aaac6fcb14 *man/ConfidenceBands.Rd
 97acecce8821fbdc4eff0f8dcff45eb5 *man/DistInfo.Rd
 4f7c24afd8c99dd5254e4f0d73ceb6ad *man/Distributions.Rd
-f945955e37cd079ab62aacea8b07e06b *man/GAS-package.Rd
+dc4beca6d98598b52d30bb1916f2b73f *man/GAS-package.Rd
 1d372f07fdd19fb7c6638bd516201d09 *man/MultiGASFit.Rd
-c688506db51cfa6617f110d8964e9026 *man/MultiGASFor.Rd
+45bbb1f9f937f0a6e044b9fa90326371 *man/MultiGASFor.Rd
 62812d198b88450cabecadf3af951bec *man/MultiGASRoll.Rd
 8f3fa54b663146a405c5221ab2a536f7 *man/MultiGASSim.Rd
 0c1459bf43c6f0c9be47682b7326e39a *man/MultiGASSpec.Rd
@@ -58,7 +58,7 @@ c043ab5c268a949b1d384a578258254e *man/MultiUnmapParameters.Rd
 1ed9ef80f75b36d85c2a6bb0e7335594 *man/PIT_test.Rd
 5c06dd90602c3ecfb1f6af8b1d8d6389 *man/StockIndices.Rd
 3d4f8becb222702862582fe85d833165 *man/UniGASFit.Rd
-9acedd5618b7f4f351a56b3f20dc1774 *man/UniGASFor.Rd
+56e7ad03373f81a89e86543c9dc6c7dd *man/UniGASFor.Rd
 a08d40b63344cde56c4480f775cd9ecb *man/UniGASRoll.Rd
 635c73e64ad36617b846a1cb026481be *man/UniGASSim.Rd
 86fd7308c118d141c0c5df3efee12b15 *man/UniGASSpec.Rd
@@ -83,7 +83,7 @@ d2e26b15d527d88499fd6c2104462e0a *man/usunp.Rd
 d8deb4865da4ce4809fefc31cdcd7679 *src/Density.cpp
 53038af23b5f6d52faad5b087eb42a95 *src/DistWrap.cpp
 885031bb6094afadd9115ba394eeb0c2 *src/DistWrap.h
-7d2edde77c2fa4ffccd765962c700e67 *src/Filters.cpp
+811f5048de267a2d4924bbe977677481 *src/Filters.cpp
 d1864b9c3f1d8fad67bc36a3f60b12cb *src/Forecast.cpp
 38da1e9da32266eb608a6954212e1ce9 *src/GASInnovation.cpp
 0dd66c85cc5dff518891e2cea568d954 *src/GASInnovation.h
@@ -119,7 +119,7 @@ f72d9df7c1fb583d1e89b435d98822a0 *src/exp.cpp
 1844a15479f46741f7082cbbd8038dc3 *src/gamma.cpp
 177c03f641f649011f6d7fdca182af14 *src/gamma.h
 54c93f905fc183b7becde84fee4a4b3d *src/mvnorm.cpp
-288745307e3d5446ace438ea51bdb202 *src/mvnorm.h
+dbe7bf7fa251bd064c015b6ce060a757 *src/mvnorm.h
 07358576e6beed3e7f4a723640f7f326 *src/mvt.cpp
 858d810f1d098107369f8ed44ed99a17 *src/mvt.h
 791f90d77a5b097920a04efa3b1776a7 *src/norm.cpp
@@ -133,5 +133,5 @@ e6c0152a9960098c4d8fc456cf568177 *src/sstd.h
 6b4f4af0f0cc8b5d93306d6b15a8eb15 *src/std.cpp
 c26b5f944c0b65db27ed6c909844d706 *src/std.h
 4488671bf63cf8170995432207e93b3c *vignettes/AddNewDistribution.Rnw
-c2494c2b795d5ad69b0a4f8f82c0e1ac *vignettes/CumLogScore_Multi.pdf
-75a53515366ea3f0e558544a875c5328 *vignettes/GAS_vignette_0.1.1.Rnw
+64ad817452749673e44122ff21ee9ae4 *vignettes/CumLogScore_Multi.pdf
+b7e4d3dc63ff45aac4f1207fd181a757 *vignettes/GAS_vignette_0.1.4.Rnw
