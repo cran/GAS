@@ -119,14 +119,14 @@ HitSequence <- function(returns_X, VaR_X) {
     Hit_X[which(returns_X <= VaR_X)] = 1
     return(Hit_X)
 }
-Kupiec <- function(Hit, tau, alphaTest = 0.95) {
+Kupiec <- function(Hit, tau) {
     N = length(Hit)
     x = sum(Hit)
     rate = x/N
     test = -2 * log(((1 - tau)^(N - x) * tau^x)/((1 - rate)^(N - x) * rate^x))
     if (is.nan(test))
         test = -2 * ((N - x) * log(1 - tau) + x * log(tau) - (N - x) * log(1 - rate) - x * log(rate))
-    threshold = qchisq(alphaTest, df = 1)
+    # threshold = qchisq(alphaTest, df = 1)
     pvalue = 1 - pchisq(test, df = 1)
 
     LRpof = c(test, pvalue)
@@ -134,7 +134,7 @@ Kupiec <- function(Hit, tau, alphaTest = 0.95) {
     return(LRpof)
 }
 
-Christoffersen <- function(Hit, tau, alphaTest = 0.95) {
+Christoffersen <- function(Hit, tau) {
     n00 = n01 = n10 = n11 = 0
     N = length(Hit)
     for (i in 2:N) {
@@ -155,9 +155,9 @@ Christoffersen <- function(Hit, tau, alphaTest = 0.95) {
     if (is.nan(LRind))
         LRind = -2 * ((n00 + n10) * log(1 - pi) + (n01 + n11) * log(pi) - n00 * log(1 - pi0) - n01 *
             log(pi0) - n10 * log(1 - pi1) - n11 * log(pi1))
-    LRpof = Kupiec(Hit, tau, alphaTest = alphaTest)["Test"]
+    LRpof = Kupiec(Hit, tau)["Test"]
     LRcc = LRpof + LRind
-    threshold = qchisq(alphaTest, df = 2)
+    # threshold = qchisq(alphaTest, df = 2)
     pvalue = 1 - pchisq(LRcc, df = 2)
     LRcc = c(LRcc, pvalue)
     names(LRcc) = c("Test", "Pvalue")

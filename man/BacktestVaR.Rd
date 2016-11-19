@@ -7,7 +7,7 @@
 	This function implements several backtesting procedures for the Value at Risk (VaR). These are: (i) The statistical tests of Kupiec (1995), Christoffesen (1998) and Engle and Manganelli (2004), (ii) The tick loss function detailed in Gonzalez-Rivera et al. (2004), the mean and max absolute loss used by McAleer and Da Veiga (2008) and the actual over expected exceedance  ratio.
 }
 \usage{
-BacktestVaR(data, VaR, tau, alphaTest = 0.95, Lags = 4)
+BacktestVaR(data, VaR, alpha, Lags = 4)
 }
 \arguments{
 \item{data}{
@@ -16,11 +16,11 @@ BacktestVaR(data, VaR, tau, alphaTest = 0.95, Lags = 4)
 \item{VaR}{
 \code{numeric} Vector containing the VaR series.}
 %
-\item{tau}{
+\item{alpha}{
 \code{numeric} The VaR confidence level.}
 %
-\item{alphaTest}{
-\code{numeric} Confidence level used in the statistical tests.}
+%\item{alphaTest}{
+%\code{numeric} Confidence level used in the statistical tests.}
 %
 \item{Lags}{
 \code{numeric} Lags used in the Dynamic Quantile test of Engle and Manganelli (2004).}
@@ -69,10 +69,10 @@ Fit = UniGASFit(GASSpec, InSampleData)
 
 Forecast = UniGASFor(Fit, Roll = TRUE, out = OutSampleData)
 
-tau = 0.05
+alpha = 0.05
 
-VaR = quantile(Forecast, tau)
+VaR = quantile(Forecast, alpha)
 
-BackTest = BacktestVaR(OutSampleData, VaR, tau)
+BackTest = BacktestVaR(OutSampleData, VaR, alpha)
 
 }

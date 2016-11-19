@@ -66,6 +66,9 @@ UniGASFit <- function(GASSpec, data) {
     optimiser = suppressWarnings(solnp(vPw, UniGASOptimiser, vY = vY, Dist = Dist, ScalingType = ScalingType, iT = iT,
         iK = iK, control = list(trace = 0)))
 
+    # UniGASOptimiser(vPw, vY = vY, Dist = Dist, ScalingType = ScalingType, iT = iT,
+                    # iK = iK)
+
     vPw = optimiser$pars
 
     lParList = vPw2lPn_Uni(vPw, iK)
