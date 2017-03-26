@@ -1,7 +1,8 @@
 StartingNu <- function(vY) {
-    dNu = try(exp(solnp(log(12), function(x, vY) {
-        dNu = exp(x) + LowerNu()
-        -sum(dt(vY, dNu, log = TRUE))
+  dStart = c(unmapVec_C(12, LowerNu(), UpperNu()))
+    dNu = try(exp(solnp(dStart, function(x, vY) {
+        dNu =  c(Map_Vec(x, LowerNu(), UpperNu()))
+        - sum(dt(vY, dNu, log = TRUE))
     }, vY = vY, control = list(trace = 0))$pars) + LowerNu(), silent = TRUE)
 
     if (is(dNu, "try-error"))
@@ -57,16 +58,15 @@ StaticStarting_Uni <- function(vY, Dist, iK) {
     }
     if (Dist == "ast" | Dist == "ast1") {
 
-        dEmpmean = mean(vY)
-        dEmpsd = sd(vY)
-
-        vZ = (vY - dEmpmean)/dEmpsd
-
         dNu1 = StartingNu(vY)
 
         if (Dist == "ast") {
 
             dNu2 = dNu1 * 1.5
+
+            if (dNu2 > UpperNu()) {
+              dNu2 = UpperNu() - 1
+            }
 
         } else {
 
@@ -199,6 +199,7 @@ UniGAS_Starting <- function(vY, iT, iK, Dist, ScalingType, GASPar) {
     return(list(vPw = c(vKappa, vA, vB), StaticFit = StaticFit))
 
 }
+
 starting_vA_Uni <- function(vY, vUncValues, mB, dA_foo, iT, iK, Dist, ScalingType, GASPar) {
 
     seq_alpha = c(seq(1e-04, 1.5, length.out = 30))
@@ -231,6 +232,7 @@ starting_vA_Uni <- function(vY, vUncValues, mB, dA_foo, iT, iK, Dist, ScalingTyp
 
     return(diag(mA))
 }
+
 starting_vB_Uni <- function(vY, vUncValues, dB_foo, mA, iT, iK, Dist, ScalingType, GASPar) {
 
     seq_beta = c(seq(0.5, 0.98, length.out = 30))
@@ -265,7 +267,6 @@ starting_vB_Uni <- function(vY, vUncValues, dB_foo, mA, iT, iK, Dist, ScalingTyp
 
     return(diag(mB))
 }
-
 
 StartingValues_mvnorm <- function(mY, iT, iN, iK, GASPar, ScalingType, ScalarParameters) {
 
@@ -363,7 +364,6 @@ MultiGAS_Starting <- function(mY, iT, iN, iK, Dist, GASPar, ScalingType, ScalarP
 
     return(vPw)
 }
-
 
 starting_vA_Multi <- function(mY, vUncValues, mB, dA_foo, iT, iK, iN, Dist, ScalingType, GASPar) {
 

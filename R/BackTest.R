@@ -42,7 +42,7 @@ BacktestDensity <- function(Roll, lower, upper, K = 1000, a = 0, b = 1) {
     vAvg = c(LS = -mean(vLS), apply(mWCRPS, 2, mean))
 
     lOut = list()
-    lOut[["series"]] = list(LS = vLS, WCRPS = mWCRPS)
+    lOut[["series"]] = list(NLS = vLS, WCRPS = mWCRPS)
     lOut[["average"]] = vAvg
 
     return(lOut)
