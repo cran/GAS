@@ -222,7 +222,7 @@ MultiGASFor <- function(mGASFit, H = NULL, Roll = FALSE, out = NULL, B = 10000, 
 }
 
 UniGASRoll <- function(data, GASSpec, ForecastLength = 500, Nstart = NULL, RefitEvery = 23, RefitWindow = c("moving",
-    "recursive"), cluster = NULL, ...) {
+    "recursive"), cluster = NULL, Compute.SE = FALSE, ...) {
 
     StartTime = Sys.time()
 
@@ -266,10 +266,10 @@ UniGASRoll <- function(data, GASSpec, ForecastLength = 500, Nstart = NULL, Refit
     }
     # fits
     if (is.null(cluster)) {
-        lFits = lapply(lData, UniGASFit, GASSpec = GASSpec, ... = ...)
+        lFits = lapply(lData, UniGASFit, GASSpec = GASSpec, ... = ..., Compute.SE = Compute.SE)
     }
     if (!is.null(cluster)) {
-        lFits = parLapply(cluster, lData, UniGASFit, GASSpec = GASSpec, ... = ...)
+        lFits = parLapply(cluster, lData, UniGASFit, GASSpec = GASSpec, ... = ..., Compute.SE = Compute.SE)
     }
 
     # coef
@@ -298,10 +298,15 @@ UniGASRoll <- function(data, GASSpec, ForecastLength = 500, Nstart = NULL, Refit
 
         }, lFits = lFits, lOut = lOut)
 
-        mForc = do.call(rbind, lapply(lForecasts, getForecast))
-        vU = do.call(c, lapply(lForecasts, pit))
-        vLS = do.call(c, lapply(lForecasts, LogScore))
+        mForc   = do.call(rbind, lapply(lForecasts, getForecast))
+        vU      = do.call(c, lapply(lForecasts, pit))
+        vLS     = do.call(c, lapply(lForecasts, LogScore))
         Moments = do.call(rbind, lapply(lForecasts, getMoments))
+    }
+
+    if (all(class(vY)[1] != c("zoo", "ts", "xts"))) {
+      rownames(mForc)  = paste("T+", 1:ForecastLength, sep = "")
+      rownames(Moments) = paste("T+", 1:ForecastLength, sep = "")
     }
 
     PitTest = PIT_test(vU, G = 20, alpha = 0.05, plot = FALSE)
@@ -329,7 +334,7 @@ UniGASRoll <- function(data, GASSpec, ForecastLength = 500, Nstart = NULL, Refit
 }
 
 MultiGASRoll <- function(data, GASSpec, ForecastLength = 500, Nstart = NULL, RefitEvery = 23, RefitWindow = c("moving",
-    "recursive"), cluster = NULL, ...) {
+    "recursive"), cluster = NULL, Compute.SE = FALSE, ...) {
 
     StartTime = Sys.time()
 
@@ -372,10 +377,10 @@ MultiGASRoll <- function(data, GASSpec, ForecastLength = 500, Nstart = NULL, Ref
     }
     # fits
     if (is.null(cluster)) {
-      lFits = lapply(lData, MultiGASFit, GASSpec = GASSpec, ... = ...)
+      lFits = lapply(lData, MultiGASFit, GASSpec = GASSpec, ... = ..., Compute.SE = Compute.SE)
     }
     if (!is.null(cluster)) {
-        lFits = parLapply(cluster, lData, MultiGASFit, GASSpec = GASSpec, ... = ...)
+        lFits = parLapply(cluster, lData, MultiGASFit, GASSpec = GASSpec, ... = ..., Compute.SE = Compute.SE)
     }
 
     # coef
@@ -408,6 +413,11 @@ MultiGASRoll <- function(data, GASSpec, ForecastLength = 500, Nstart = NULL, Ref
         vU = NULL
         vLS = do.call(c, lapply(lForecasts, LogScore))
         Moments = EvalMoments_multi(t(mForc), Dist, iN)
+    }
+
+    if (all(class(mY)[1] != c("zoo", "ts", "xts"))) {
+      rownames(mForc)  = paste("T+", 1:ForecastLength, sep = "")
+      rownames(Moments) = paste("T+", 1:ForecastLength, sep = "")
     }
 
     elapsedTime = Sys.time() - StartTime

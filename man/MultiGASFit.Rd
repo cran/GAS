@@ -7,7 +7,7 @@
 	Estimate multivariate GAS models by Maximum Likelihood.
 }
 \usage{
-MultiGASFit(GASSpec, data, fn.optimizer = fn.solnp)
+MultiGASFit(GASSpec, data, fn.optimizer = fn.optim, Compute.SE = TRUE)
 }
 \arguments{
 \item{GASSpec}{
@@ -18,9 +18,10 @@ dimension TxN containing the multivariate time series of observations.
 It can also be an object of the class \code{ts}, \code{xts} or \code{zoo}.}
 %
 \item{fn.optimizer}{\code{function}. This is a generic optimization function that can be provided by the user.
-The default optimizer is the  General Nonlinear Augmented Lagrange Multiplier method of Ye (1988) available in
-the R package Rsolnp (Ghalanos and Theussl 2016). By default \code{fn.optimizer = fn.solnp} where \link{fn.solnp} is
-a wrapper to the \link{solnp} function of the Rsolnp R package. See Details for user defined optimization routines.}
+By default \code{fn.optimizer = fn.optim} where \link{fn.optim} is
+a wrapper to the \link{optim} function. See Details for user defined optimization routines.}
+%
+\item{Compute.SE}{\code{logical}. Should asymptotic Standard Errors be computed? By default \code{Compute.SE = TRUE}}
 }
 \details{
 Maximum Likelihood estimation of GAS models is an on-going research topic.
@@ -42,7 +43,7 @@ coefficients contained in A and B. Further technical details are presented in Se
 The user is free to employ his/her own optimization routine via the \code{fn.optimizer} argument. \code{fn.optimizer}
 accepts a \code{function} object. The user provided optimizer has to satisfy strict requirements. The arguments of the
 \code{fn.optimizer} are : i) \code{par0} a vector of starting values, ii) \code{data} the data provided, iii) \code{GASSpec}
-an object of the class \link{uGASSpec}, and iv) \code{FUN} the likelihood function. The output of \code{fn.optimizer} have
+an object of the class \link{uGASSpec}, and iv) \code{FUN} the likelihood function. The output of \code{fn.optimizer} has
 to be an object of the class \code{list} with four named elements: i) \code{pars}: a \code{numeric} vector
 where the estimated parameters are stored, ii) \code{value}: a \code{numeric} containing the value of the negative log likelihood
 evaluated at its minimum, iii) \code{hessian}, a \code{numeric} matrix containing the Hessian matrix evaluated at
@@ -52,8 +53,8 @@ or \code{character} string reporting information about the convergence of the op
 
 The user is allowed to not include the last two elements of the output of the \code{fn.optimizer} function, that is, the values
 \code{hessian = NULL} and \code{convergence = NULL} are admissible. In the case of \code{hessian = NULL}, the Hessian matrix is
-evaluated numerically using the \link{hessian} function in the \code{numDeriv} package of Gilbert and Varadhan (2016). If the provided
-hessian is not positive defined, a try with the hessian evaluation used by the function \link{optim} is made.
+evaluated numerically using the \link{hessian} function in the \code{numDeriv} package of Gilbert and Varadhan (2016). If the provided hessian
+is not positive definite, a try with the hessian evaluation used by the BFGS quasi-Newton implementation in the function \link{optim} is made.
 }
 \value{
 An object of the class \link{mGASFit}.

@@ -1,6 +1,6 @@
 context("Test Simulate")
 
-tol = 1e-2
+tol = 1e-4
 
 test_that("Simulation", {
 
@@ -20,7 +20,7 @@ test_that("Simulation", {
   set.seed(123)
   Sim = GAS::UniGASSim(fit = NULL, iT, Kappa, A, B, Dist = "norm", ScalingType = "Identity")
 
-  tmp = Sim@Data$vY
+  tmp = getObs(Sim)
   expect_equal(dim(tmp), c(iT, 1))
   expect_true(abs(sum(tmp) - -129.6511) < tol)
 
@@ -44,7 +44,7 @@ test_that("Simulation", {
   set.seed(123)
   Sim = GAS::UniGASSim(fit = NULL, iT, Kappa, A, B, Dist = "snorm", ScalingType = "Identity")
 
-  tmp = Sim@Data$vY
+  tmp = getObs(Sim)
   expect_equal(dim(tmp), c(iT, 1))
   expect_true(abs(sum(tmp) - 5.506904) < tol)
 
@@ -67,7 +67,7 @@ test_that("Simulation", {
   set.seed(123)
   Sim = GAS::UniGASSim(fit = NULL, iT, Kappa, A, B, Dist = "std", ScalingType = "Identity")
 
-  tmp = Sim@Data$vY
+  tmp = getObs(Sim)
   expect_equal(dim(tmp), c(iT, 1))
   expect_true(abs(sum(tmp) - -8.063126) < tol)
 
@@ -93,7 +93,7 @@ test_that("Simulation", {
   set.seed(123)
   Sim = GAS::UniGASSim(fit = NULL, iT, Kappa, A, B, Dist = "sstd", ScalingType = "Identity")
 
-  tmp = Sim@Data$vY
+  tmp = getObs(Sim)
   expect_equal(dim(tmp), c(iT, 1))
   expect_true(abs(sum(tmp) - 4.379524) < tol)
 
@@ -129,7 +129,7 @@ test_that("Simulation", {
   set.seed(123)
   Sim = GAS::MultiGASSim(fit = NULL, iT, N, Kappa, A, B, Dist, ScalingType = "Identity")
 
-  tmp = Sim@Data$mY
+  tmp = getObs(Sim)
   expect_equal(dim(tmp), c(N, iT))
 
   tmp = max(abs(Sim@GASDyn$mTheta[,100] - c(0.10000000, 0.20000000, 0.30000000, 0.92602321,
@@ -137,3 +137,4 @@ test_that("Simulation", {
   expect_true(tmp < tol)
 
 })
+
