@@ -15,7 +15,6 @@ A detailed implementation of the package functionalities are reported in Ardia e
 \tabular{ll}{
 Package: \tab GAS\cr
 Type: \tab Package\cr
-Version: \tab 0.2.5\cr
 Date: \tab 2017-11-16\cr
 License: \tab GPL (>= 2)\cr
 }
@@ -33,7 +32,7 @@ needs to be coded for the case N>4. The Jacobian for N>4 is replaced by the iden
 \author{
 Leopoldo Catania [aut,cre], Kris Boudt [ctb], David Ardia [ctb]
 
-Maintainer: Leopoldo Catania <leopoldo.catania@uniroma2.it>
+Maintainer: Leopoldo Catania <leopoldo.catania@econ.au.dk>
 }
 \references{
 Ardia D, Boudt K and Catania L (2016a).
