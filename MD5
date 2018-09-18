@@ -1,5 +1,5 @@
-294edb64dcb508cddaaa6a28b9ca2273 *ChangeLog
-45ca8dbccebdfbda15a807d60a7dddcd *DESCRIPTION
+7159746a8b0e5698aec3b0778d46d23e *ChangeLog
+60ecfb1d68578e12da28800a821dc589 *DESCRIPTION
 b769e29d2dbdbf837aa814e205d923b7 *NAMESPACE
 336aa6855f1e479ef4a24407ab4089a5 *R/BackTest.R
 2717feb18e42fcd44ff911979bb3f512 *R/ClassMethods.R
@@ -22,8 +22,8 @@ bb3db50ecadb4a744e5680c5e7fdcd91 *R/Simulate.R
 da8f065d072c8a6fe705ce47be9c3157 *R/StartingValues.R
 b7bdb33913df699a8efe73a7a9c6abda *R/Testing.R
 cb0206811a724363725eca81ff57d6f7 *R/Utils.R
-eb85338312c61cae1d16cd2162482eaa *README.md
-a4ad51db5dd2f601db919e00e943ba68 *build/partial.rdb
+48b9748845635aa45f70bff8a80c87d4 *README.md
+eb94a17988b0944812f12339776d5ae2 *build/partial.rdb
 03f8e43b42fd5ee4f8ff1dc06cbf200a *data/Goals.rda
 f3ac0d2cfd505c3ce9b6d8de9b4c3c5f *data/StockIndices.rda
 180b4c3ad7f4e04a941e580c4010a64f *data/cpichg.rda
@@ -153,7 +153,7 @@ a3a3ddbe4e92a146af1898a11a2d8859 *src/negbin.h
 a1a66f8f0b3fb85bc96fe3c9f88b0bd9 *src/poi.h
 509743439e334eaaca781618cc30262f *src/skellam.cpp
 375a745cfa8e4dbe60e510875d389fce *src/skellam.h
-b1010dba3d46e7b13021714986475e1f *src/snorm.cpp
+3dc7ef1dd20e78561f7272b3c8657a73 *src/snorm.cpp
 8f80d02253c5ab7d2d2becb1977840f9 *src/snorm.h
 c527e4a8698c8cc4184a7db949b48eac *src/snorm2.cpp
 488c54fa73bc2985a08f335e987f5dea *src/sstd.cpp
