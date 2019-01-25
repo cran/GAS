@@ -1,5 +1,5 @@
 7159746a8b0e5698aec3b0778d46d23e *ChangeLog
-60ecfb1d68578e12da28800a821dc589 *DESCRIPTION
+13a5790659142f70b5e9718193bf04b8 *DESCRIPTION
 b769e29d2dbdbf837aa814e205d923b7 *NAMESPACE
 336aa6855f1e479ef4a24407ab4089a5 *R/BackTest.R
 2717feb18e42fcd44ff911979bb3f512 *R/ClassMethods.R
@@ -17,13 +17,13 @@ e737edd1b2989fb3b077bb68e077f4cd *R/Extractors.R
 de43b59ffc3d67b34824d11582895b74 *R/ParNames.R
 f9efd97552bcf4dca38ad01d9d546711 *R/ParameterConstraints.R
 5ebd280e4a9770676d95df9a30684527 *R/ParameterTransformation.R
-1357ef532ecc4c13d9f6c80b68da2c44 *R/RcppExports.R
+cc7e52bdcaf77b515c64d21c5d1af50c *R/RcppExports.R
 bb3db50ecadb4a744e5680c5e7fdcd91 *R/Simulate.R
 da8f065d072c8a6fe705ce47be9c3157 *R/StartingValues.R
 b7bdb33913df699a8efe73a7a9c6abda *R/Testing.R
 cb0206811a724363725eca81ff57d6f7 *R/Utils.R
-48b9748845635aa45f70bff8a80c87d4 *README.md
-eb94a17988b0944812f12339776d5ae2 *build/partial.rdb
+c0ea71f43d839ec469ea9889e168b943 *README.md
+ebccbb7a1883c7f3c1fd1417312020bd *build/partial.rdb
 03f8e43b42fd5ee4f8ff1dc06cbf200a *data/Goals.rda
 f3ac0d2cfd505c3ce9b6d8de9b4c3c5f *data/StockIndices.rda
 180b4c3ad7f4e04a941e580c4010a64f *data/cpichg.rda
@@ -33,7 +33,7 @@ be7eda5503d8e9b89e1fe248ee601b0e *data/sp500ret.rda
 ce5f2b0fb1880f77af1f4e4bb8912ead *data/sp500rv.rda
 a0e817f973074fc1918ec63e55c9688f *data/tqdata.rda
 cb54ab207478b323aa28c58a7a14ea54 *data/usunp.rda
-9b96b80645bc803832bc4fef3eda1ee1 *inst/CITATION
+65630216e1a72aea2bbb4d6bf62a4bc5 *inst/CITATION
 5138873c6ed389219d5e75397c7628f9 *inst/ExtensionTests/run_Estimate.R
 926d0f257528e83b84f084ef796b039b *inst/ExtensionTests/run_Forecast.R
 da3aea93631f5ec64abb5dd13e56f529 *inst/ExtensionTests/run_Score.R
@@ -58,13 +58,13 @@ ffc15412808d95f59f57dbd976dcfafa *inst/doc/Windows/Table3.txt
 d66b1de710f6db3e45e3cd33a6801702 *inst/doc/Windows/sink_PART_II_R3.4.1_mingw32.txt
 0d00ab1be102195b47351cae4a922ab6 *inst/doc/Windows/sink_PART_I_R3.4.1_mingw32.txt
 065557cbab2f1202e82745dfc80e1056 *man/BacktestDensity.Rd
-69f21f67822a52c7512dae7c991cc30f *man/BacktestVaR.Rd
+949010364396608cce94a3e6cef8614c *man/BacktestVaR.Rd
 aa86f22f61862db195ffa6231b182a12 *man/Bounds.Rd
 37a28078826931e7bbd38fb96d1a1175 *man/ConfidenceBands.Rd
 882b0e8adecc5da59d47a314f7bb0436 *man/DistInfo.Rd
 9c4cafbf03b5303086433ccf41b90a17 *man/Distributions.Rd
 c0810b0271b28eb8529807d983b155a5 *man/FZLoss.Rd
-39371e60df12f09a12f05c9a2e4b017c *man/GAS-package.Rd
+982b83f68af2fe05b412f8e61c04b056 *man/GAS-package.Rd
 a51c68835ee7ae0c31f0ce834a117f88 *man/Goals.Rd
 ec5f8681bcf4a33baf47942a984a6763 *man/MultiGASFit.Rd
 75626d0cac138520a0c1b0e76d0cfb20 *man/MultiGASFor.Rd
@@ -73,7 +73,7 @@ a1089cd9b647c14afe9b3e1b65b58741 *man/MultiGASSim.Rd
 c4c980bf05c694090421f6cdd0b6e7a9 *man/MultiGASSpec.Rd
 c41ac0697dbc8a26e60800818281f5f3 *man/MultiMapParameters.Rd
 c5ea767af77f7dddb66a78b58c580df9 *man/MultiUnmapParameters.Rd
-7b19bc74a51a6866f046a604bed4488a *man/PIT_test.Rd
+a3db86c604b7d870917d21bf831aadd3 *man/PIT_test.Rd
 cb3acc634ba55e048ab92566958cb691 *man/StockIndices.Rd
 50a8e0feeef1850a2c5b290f9f8f4529 *man/UniGASFit.Rd
 8fd020fa1920ab966d31295136e2c52b *man/UniGASFor.Rd
@@ -118,7 +118,7 @@ b32f7a06fd9352a57fd0fb9e83c72ed5 *src/Mapping.h
 db9ca314d7175e75c3655ce38eabb64d *src/Optimiser.cpp
 49679b42877bea980effa761fc595437 *src/PIT.cpp
 ef85b02f79d604fe813f2d6d4b815cdd *src/Quantiles.cpp
-8ccb1c8c290479669b20b7217423cf22 *src/RcppExports.cpp
+722350ea4c098e4afd14e304ff54dbfb *src/RcppExports.cpp
 a08be3442da53ad921d06cead2d10782 *src/SafeFun.cpp
 c4ed82c04dacaa88f51ea3f73f1dc8d2 *src/SafeFun.h
 cba4341292c23b97e653a2cab176391c *src/ScoreWrap.cpp
