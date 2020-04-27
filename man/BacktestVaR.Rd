@@ -48,8 +48,7 @@ BacktestVaR(data, VaR, alpha, Lags = 4)
 \references{
 Christoffersen PF (1998).
 "Evaluating Interval Rorecasts."
-International Economic Review, 39(4), 841-862.
-\doi{10.2307/2527341}.\cr
+International Economic Review, 39(4), 841-862.\cr
 
 Engle RF and Manganelli S. (2004).
 "CAViaR: Conditional Autoregressive Value at Risk by Regression Quantiles."
