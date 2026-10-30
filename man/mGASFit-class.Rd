@@ -6,7 +6,6 @@
 \alias{residuals,mGASFit-method}
 \alias{show,mGASFit-method}
 \alias{summary,mGASFit-method}
-\alias{plot,mGASFit,missing-method}
 \alias{coef,mGASFit-method}
 \alias{getFilteredParameters,mGASFit-method}
 \alias{getMoments,mGASFit-method}
@@ -42,6 +41,12 @@ estimates for the constant model, \code{Inference} inferential results for the e
 %
   }
   }
+\details{
+The \code{show} and \code{summary} methods report \emph{Average Filtered
+Parameters}: the arithmetic average of each mapped distribution parameter
+in \code{GASDyn$mTheta} over the first \code{ModelInfo$iT} columns.
+The final column, containing the next-period forecast, is excluded.
+}
 \section{Methods}{
 \itemize{
 \item \code{show} \code{signature(object = 'mGASFit')}: print object information.

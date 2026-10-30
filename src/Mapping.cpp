@@ -1,11 +1,52 @@
 #include <RcppArmadillo.h>
+#include <cmath>
 #include "Utils.h"
 
 using namespace Rcpp;
 using namespace arma;
 
-const double dLowerShape = 4.00;
-const double dUpperShape = 50.0;
+// Authoritative degrees-of-freedom bounds, shared by C++ mappings and R.
+// The small positive floor is numerical; sstd/ghskt have stricter domains.
+//[[Rcpp::export]]
+double LowerNu_cpp(std::string Dist) {
+  if (Dist == "std" || Dist == "ast" || Dist == "ast1" || Dist == "mvt")
+    return 0.001;
+  if (Dist == "sstd") return 2.0;
+  if (Dist == "ghskt") return 4.0;
+  Rcpp::stop("Degrees-of-freedom bounds are not defined for distribution '%s'.", Dist.c_str());
+  return NA_REAL;
+}
+
+//[[Rcpp::export]]
+double UpperNu_cpp(std::string Dist) {
+  LowerNu_cpp(Dist); // Validate the distribution in one place.
+  return 50.0;
+}
+
+// Enforce the open interval even when the logistic rounds to an endpoint.
+// This prevents evaluating standardized densities at exactly nu=2 or nu=4.
+static double MapNu(double x, const std::string& Dist) {
+  const double lo = LowerNu_cpp(Dist), hi = UpperNu_cpp(Dist);
+  const double e = std::exp(-std::abs(x));
+  const double p = x >= 0.0 ? 1.0/(1.0+e) : e/(1.0+e);
+  const double nu = lo + (hi-lo)*p;
+  if (nu <= lo) return std::nextafter(lo, hi);
+  if (nu >= hi) return std::nextafter(hi, lo);
+  return nu;
+}
+
+static double UnmapNu(double nu, const std::string& Dist) {
+  const double lo = LowerNu_cpp(Dist), hi = UpperNu_cpp(Dist);
+  if (!R_FINITE(nu) || nu <= lo || nu >= hi)
+    Rcpp::stop("nu must lie strictly between %g and %g for distribution '%s'.",
+               lo, hi, Dist.c_str());
+  return std::log(nu-lo) - std::log(hi-nu);
+}
+
+static double MapNuDeriv(double x, const std::string& Dist) {
+  const double e = std::exp(-std::abs(x));
+  return (UpperNu_cpp(Dist)-LowerNu_cpp(Dist))*e/((1.0+e)*(1.0+e));
+}
 
 const double dLowerSkewFS = 0.50;
 const double dUpperSkewFS = 1.50;
@@ -128,8 +169,8 @@ arma::vec MapParameters_univ(arma::vec vTheta_tilde, std::string Dist, int iK){
     double dMu    = dMu_tilde;
     double dSigma = exp(dSigma_tilde);
     double dAlpha = Map(dAlpha_tilde,0.01, 0.99);
-    double dNu1   = Map(dNu1_tilde,dLowerShape,dUpperShape);//exp(dNu1_tilde) + dLowerShape;
-    double dNu2   = Map(dNu2_tilde,dLowerShape,dUpperShape);//exp(dNu2_tilde) + dLowerShape;
+    double dNu1   = MapNu(dNu1_tilde, Dist);
+    double dNu2   = MapNu(dNu2_tilde, Dist);
 
     vTheta(0) = CheckLocation(dMu);
     vTheta(1) = CheckScale(dSigma);
@@ -147,7 +188,7 @@ arma::vec MapParameters_univ(arma::vec vTheta_tilde, std::string Dist, int iK){
     double dMu    = dMu_tilde;
     double dSigma = exp(dSigma_tilde);
     double dAlpha = Map(dAlpha_tilde,0.01,0.99);
-    double dNu1   = Map(dNu1_tilde,dLowerShape,dUpperShape);//exp(dNu1_tilde) + dLowerShape;
+    double dNu1   = MapNu(dNu1_tilde, Dist);
 
     vTheta(0) = CheckLocation(dMu);
     vTheta(1) = CheckScale(dSigma);
@@ -162,8 +203,8 @@ arma::vec MapParameters_univ(arma::vec vTheta_tilde, std::string Dist, int iK){
 
     double dMu  = dMu_tilde;
     double dPhi = exp(dPhi_tilde);
-    // double dNu  = exp(dNu_tilde) + dLowerShape;
-    double dNu  = Map(dNu_tilde,dLowerShape,dUpperShape);
+    
+    double dNu  = MapNu(dNu_tilde, Dist);
 
     vTheta(0) = CheckLocation(dMu);
     vTheta(1) = CheckScale(dPhi);
@@ -180,8 +221,8 @@ arma::vec MapParameters_univ(arma::vec vTheta_tilde, std::string Dist, int iK){
     double dMu    = dMu_tilde;
     double dSigma = exp(dSigma_tilde);
     double dXi    = Map(dXi_tilde, dLowerSkewFS, dUpperSkewFS);
-    // double dNu  = exp(dNu_tilde) + dLowerShape;
-    double dNu  = Map(dNu_tilde,dLowerShape,dUpperShape);
+    
+    double dNu  = MapNu(dNu_tilde, Dist);
 
     vTheta(0) = CheckLocation(dMu);
     vTheta(1) = CheckScale(dSigma);
@@ -277,7 +318,7 @@ arma::vec MapParameters_univ(arma::vec vTheta_tilde, std::string Dist, int iK){
     double dMu    = dMu_tilde;
     double dSigma = exp(dSigma_tilde);
     double dBetaBar = dBetaBar_tilde;
-    double dNu  = Map(dNu_tilde, dLowerShape + 0.01, dUpperShape);
+    double dNu  = MapNu(dNu_tilde, Dist);
 
     vTheta(0) = CheckLocation(dMu);
     vTheta(1) = CheckScale(dSigma);
@@ -294,14 +335,15 @@ arma::vec MapParameters_univ(arma::vec vTheta_tilde, std::string Dist, int iK){
 
   }
   if(Dist == "skellam"){
-    double dMu_tilde = vTheta_tilde(0);
-    double dSigma2_tilde = vTheta_tilde(1);
-
-    double dMu = dMu_tilde;
-    double dSigma2 = exp(dSigma2_tilde);
-
-    vTheta(0) = dMu;
-    vTheta(1) = CheckScale(dSigma2);
+    const double mu=vTheta_tilde(0), gap=exp(vTheta_tilde(1));
+    const double v=std::hypot(mu,gap);
+    if (!R_FINITE(mu) || !R_FINITE(gap) || gap <= 0 ||
+        !R_FINITE(v) || v <= fabs(mu)) {
+      vTheta.fill(NA_REAL); return vTheta;
+    }
+    vTheta(0)=mu;
+    vTheta(1)=v;
+    return vTheta; // Do not clip the coupled coordinates separately.
   }
   return InfRemover_vec(vTheta);
 }
@@ -322,8 +364,8 @@ arma::vec UnmapParameters_univ(arma::vec vTheta, std::string Dist, int iK = -999
     double dMu_tilde    = dMu;
     double dSigma_tilde = log(dSigma);
     double dAlpha_tilde = Unmap(dAlpha,0.01,0.99);
-    double dNu1_tilde   = Unmap(dNu1,dLowerShape,dUpperShape);// log(dNu1 - dLowerShape);
-    double dNu2_tilde   = Unmap(dNu2,dLowerShape,dUpperShape);// log(dNu2 - dLowerShape);
+    double dNu1_tilde   = UnmapNu(dNu1, Dist);
+    double dNu2_tilde   = UnmapNu(dNu2, Dist);
 
     vTheta_tilde(0) = dMu_tilde;
     vTheta_tilde(1) = dSigma_tilde;
@@ -341,7 +383,7 @@ arma::vec UnmapParameters_univ(arma::vec vTheta, std::string Dist, int iK = -999
     double dMu_tilde    = dMu;
     double dSigma_tilde = log(dSigma);
     double dAlpha_tilde = Unmap(dAlpha,0.01,0.99);
-    double dNu1_tilde   = Unmap(dNu1,dLowerShape,dUpperShape);// log(dNu1 - dLowerShape);
+    double dNu1_tilde   = UnmapNu(dNu1, Dist);
 
     vTheta_tilde(0) = dMu_tilde;
     vTheta_tilde(1) = dSigma_tilde;
@@ -357,8 +399,8 @@ arma::vec UnmapParameters_univ(arma::vec vTheta, std::string Dist, int iK = -999
 
     double dMu_tilde  = dMu;
     double dPhi_tilde = log(dPhi);
-    // double dNu_tilde  = log(dNu - dLowerShape);
-    double dNu_tilde  = Unmap(dNu,dLowerShape,dUpperShape);
+    
+    double dNu_tilde  = UnmapNu(dNu, Dist);
 
     vTheta_tilde(0) = dMu_tilde;
     vTheta_tilde(1) = dPhi_tilde;
@@ -375,8 +417,8 @@ arma::vec UnmapParameters_univ(arma::vec vTheta, std::string Dist, int iK = -999
     double dMu_tilde    = dMu;
     double dSigma_tilde = log(dSigma);
     double dXi_tilde    = Unmap(dXi, dLowerSkewFS, dUpperSkewFS);
-    // double dNu_tilde  = log(dNu - dLowerShape);
-    double dNu_tilde  = Unmap(dNu,dLowerShape,dUpperShape);
+    
+    double dNu_tilde  = UnmapNu(dNu, Dist);
 
     vTheta_tilde(0) = dMu_tilde;
     vTheta_tilde(1) = dSigma_tilde;
@@ -476,7 +518,7 @@ arma::vec UnmapParameters_univ(arma::vec vTheta, std::string Dist, int iK = -999
     double dMu_tilde    = dMu;
     double dSigma_tilde = log(dSigma);
     double dBetaBar_tilde = dBetaBar;
-    double dNu_tilde  = Unmap(dNu, dLowerShape + 0.01, dUpperShape);
+    double dNu_tilde  = UnmapNu(dNu, Dist);
 
     vTheta_tilde(0) = dMu_tilde;
     vTheta_tilde(1) = dSigma_tilde;
@@ -484,14 +526,12 @@ arma::vec UnmapParameters_univ(arma::vec vTheta, std::string Dist, int iK = -999
     vTheta_tilde(3) = dNu_tilde;
   }
   if(Dist == "skellam"){
-    double dMu = vTheta(0);
-    double dSigma2 = vTheta(1);
-
-    double dMu_tilde = dMu;
-    double dSigma2_tilde = log(dSigma2);
-
-    vTheta_tilde(0) = dMu_tilde;
-    vTheta_tilde(1) = CheckScale(dSigma2_tilde);
+    const double mu=vTheta(0), v=vTheta(1);
+    if (!R_FINITE(mu) || !R_FINITE(v) || v <= fabs(mu)) {
+      vTheta_tilde.fill(NA_REAL); return vTheta_tilde;
+    }
+    vTheta_tilde(0)=mu;
+    vTheta_tilde(1)=0.5*(log(v-fabs(mu))+log(v)+log1p(fabs(mu)/v));
   }
   if(Dist == "negbin"){
 
@@ -520,8 +560,8 @@ arma::mat MapParametersJacobian_univ(arma::vec vTheta_tilde, std::string Dist, i
     mJ(0,0) = 1;
     mJ(1,1) = CheckScale(exp(dSigma_tilde));
     mJ(2,2) = MapDeriv(dAlpha_tilde,0.01,0.99);;
-    mJ(3,3) = MapDeriv(dNu1_tilde,dLowerShape,dUpperShape);; //exp(dNu1_tilde);
-    mJ(4,4) = MapDeriv(dNu2_tilde,dLowerShape,dUpperShape);; //exp(dNu2_tilde);
+    mJ(3,3) = MapNuDeriv(dNu1_tilde, Dist);; //exp(dNu1_tilde);
+    mJ(4,4) = MapNuDeriv(dNu2_tilde, Dist);; //exp(dNu2_tilde);
 
   }
   if(Dist=="ast1"){
@@ -532,7 +572,7 @@ arma::mat MapParametersJacobian_univ(arma::vec vTheta_tilde, std::string Dist, i
     mJ(0,0) = 1;
     mJ(1,1) = CheckScale(exp(dSigma_tilde));;
     mJ(2,2) = MapDeriv(dAlpha_tilde,0.01,0.99);;
-    mJ(3,3) = MapDeriv(dNu1_tilde,dLowerShape,dUpperShape);; //exp(dNu1_tilde);
+    mJ(3,3) = MapNuDeriv(dNu1_tilde, Dist);; //exp(dNu1_tilde);
   }
   if(Dist=="std"){
 
@@ -542,7 +582,7 @@ arma::mat MapParametersJacobian_univ(arma::vec vTheta_tilde, std::string Dist, i
     mJ(0,0) = 1;
     mJ(1,1) = CheckScale(exp(dPhi_tilde));
     // mJ(2,2) = exp(dNu_tilde);
-    mJ(2,2) = MapDeriv(dNu_tilde,dLowerShape,dUpperShape);
+    mJ(2,2) = MapNuDeriv(dNu_tilde, Dist);
 
   }
   if(Dist=="sstd"){
@@ -555,7 +595,7 @@ arma::mat MapParametersJacobian_univ(arma::vec vTheta_tilde, std::string Dist, i
     mJ(1,1) = CheckScale(exp(dSigma_tilde));
     mJ(2,2) = MapDeriv(dXi_tilde,dLowerSkewFS, dUpperSkewFS);
     // mJ(3,3) = exp(dNu_tilde);
-    mJ(3,3) = MapDeriv(dNu_tilde,dLowerShape,dUpperShape);
+    mJ(3,3) = MapNuDeriv(dNu_tilde, Dist);
   }
 
   if(Dist=="norm"){
@@ -628,7 +668,7 @@ arma::mat MapParametersJacobian_univ(arma::vec vTheta_tilde, std::string Dist, i
     mJ(0,0) = 1.0;
     mJ(1,1) = CheckScale(exp(dSigma_tilde));
     mJ(2,2) = 1.0;
-    mJ(3,3) = MapDeriv(dNu_tilde,dLowerShape + 0.01, dUpperShape);
+    mJ(3,3) = MapNuDeriv(dNu_tilde, Dist);
   }
   if(Dist == "negbin"){
 
@@ -639,13 +679,17 @@ arma::mat MapParametersJacobian_univ(arma::vec vTheta_tilde, std::string Dist, i
     mJ(1,1) = CheckScale(exp(dNu_tilde));
 
   }
-  if(Dist=="skellam"){
-
-    double dSigma2_tilde = vTheta_tilde(1);
-
-    mJ(0,0) = 1.0;
-    mJ(1,1) = CheckScale(exp(dSigma2_tilde));
-
+  if(Dist == "skellam"){
+    const double mu=vTheta_tilde(0), gap=exp(vTheta_tilde(1));
+    const double v=std::hypot(mu,gap);
+    if (!R_FINITE(mu) || !R_FINITE(gap) || gap <= 0 ||
+        !R_FINITE(v) || v <= fabs(mu)) {
+      mJ.fill(NA_REAL); return mJ;
+    }
+    mJ(0,0)=1.0;
+    mJ(1,0)=mu/v;
+    mJ(1,1)=gap*(gap/v);
+    return mJ;
   }
 
   arma::vec vJ_safe =  InfRemover_vec(mJ.diag());
@@ -793,7 +837,7 @@ arma::vec mvtMap(arma::vec vTheta_tilde, int iN, int iK){
     vSigma(n) = CheckScale(vSigma(n));
   }
 
-  double dNu = Map(dNu_tilde, dLowerShape, dUpperShape);
+  double dNu = MapNu(dNu_tilde, "mvt");
 
   arma::mat mR = MapR_C(vRho_tilde, iN);
 
@@ -837,7 +881,7 @@ arma::vec mvtUnmap(arma::vec vTheta, int iN, int iK){
 
   arma::vec vSigma_tilde = log(vSigma);
 
-  double dNu_tilde = Unmap(dNu, dLowerShape, dUpperShape);
+  double dNu_tilde = UnmapNu(dNu, "mvt");
 
   arma::vec vRho_tilde = UnMapR_C(vRho, iN);
 
@@ -876,64 +920,65 @@ arma::vec UnmapParameters_multi(arma::vec vTheta, std::string Dist,int iN, int i
   return InfRemover_vec(vTheta);
 }
 
-arma::mat Jacobian_MapR(arma::vec vPhi, int iN){
+arma::mat Jacobian_MapR(arma::vec vPhi, int iN) {
+  if (iN < 2)
+    Rcpp::stop("iN must be at least 2.");
 
-  int i,j,iC=0,iK = iN*(iN-1)/2;
+  const int q = iN * (iN - 1) / 2;
 
-  arma::mat mPhi=zeros(iN,iN);
-  arma::mat mC=zeros(iN,iN);
-  arma::mat mS=zeros(iN,iN);
+  if (vPhi.n_elem != static_cast<arma::uword>(q) ||
+      !vPhi.is_finite())
+      Rcpp::stop("vPhi must contain N*(N-1)/2 finite angles.");
 
-  for(i = 0;i<iN;i++){
-    for(j = i;j<iN;j++){
-      if(i!=j){
-        mPhi(i,j) = vPhi(iC);
-        mC(i,j) = cos(vPhi(iC));
-        mS(i,j) = sin(vPhi(iC));
-        iC+=1;
+  // Angles and correlations use row-wise upper-triangle order.
+  const arma::mat phi = FillUpperTriangular(vPhi, iN);
+  const arma::mat C = arma::cos(phi);
+  const arma::mat S = arma::sin(phi);
+  const arma::mat X = HalfR(vPhi); // R = X.t() * X
+
+  arma::mat J(q, q, arma::fill::zeros);
+
+  int col = 0;
+
+  for (int a = 0; a < iN - 1; ++a) {
+    for (int b = a + 1; b < iN; ++b, ++col) {
+
+      // Only column b of X depends on phi(a,b).
+      arma::vec dx(iN, arma::fill::zeros);
+
+      double p = 1.0;  // Product of preceding sines.
+      double dp = 0.0; // Derivative of that product.
+
+      for (int r = 0; r < b; ++r) {
+        const double c = C(r, b);
+        const double s = S(r, b);
+
+        dx(r) = c * dp - (r == a ? s * p : 0.0);
+
+        dp = s * dp + (r == a ? c * p : 0.0);
+        p *= s;
+      }
+
+      dx(b) = dp;
+
+      // dR = dX.t()*X + X.t()*dX.
+      // Pack its upper triangle in the order used by build_vR().
+      int row = 0;
+
+      for (int i = 0; i < iN - 1; ++i) {
+        for (int j = i + 1; j < iN; ++j, ++row) {
+          if (i == b)
+            J(row, col) += arma::dot(dx, X.col(j));
+
+          if (j == b)
+            J(row, col) += arma::dot(X.col(i), dx);
+        }
       }
     }
   }
 
-  //
-  // int iK = iN*(iN-1)/2;
-  arma::mat mJ = zeros(iK,iK);
-
-  if(iN==2){
-    mJ(0,0) = -sin(mPhi(0,1));
-  }
-
-  if(iN==3){
-    mJ(0,0) = -sin(mPhi(0,1));
-    //
-    mJ(1,1) = -sin(mPhi(0,2));
-    mJ(2,0) = -mC(0,2) * sin(mPhi(0,1)) + mS(0,2)*mC(1,2)*cos(mPhi(0,1));
-    mJ(2,1) = -mC(0,1) * sin(mPhi(0,2)) + mS(0,1)*mC(1,2)*cos(mPhi(0,2));
-    mJ(2,2) = -mS(0,1)*mS(0,2)*sin(mPhi(1,2));
-  }
-  if(iN==4){
-    mJ(0,0) = -sin(mPhi(0,1));
-    mJ(1,1) = -sin(mPhi(0,2));
-    mJ(3,0) = -mC(0,2) * sin(mPhi(0,1)) + mS(0,2)*mC(1,2)*cos(mPhi(0,1));
-    mJ(3,1) = -mC(0,1) * sin(mPhi(0,2)) + mS(0,1)*mC(1,2)*cos(mPhi(0,2));
-    mJ(2,2) = -mS(0,1)*mS(0,2)*sin(mPhi(1,2));
-    //
-    mJ(3,3) = -sin(mPhi(0,3));
-    mJ(4,0) = -mC(0,3)*sin(mPhi(0,1)) + mC(1,3)*mS(0,1)*cos(mPhi(0,1));
-    mJ(4,2) = -sin(mPhi(0,3))*mC(0,1) + mC(1,3)*cos(mPhi(0,3))*mS(0,1);
-    mJ(4,4) = sin(mPhi(1,3))*mS(0,3)*mS(0,1);
-    mJ(5,1) = -sin(mPhi(0,2))*mC(0,3) + mC(1,2)*mC(1,3)*cos(mPhi(0,2))*mS(0,3) + mS(1,2)*cos(mPhi(0,2))*mS(0,3)*mS(1,3)*mC(2,3);
-    mJ(5,3) = -sin(mPhi(1,2))*mC(1,3)*mS(0,2)*mS(0,3) + cos(mPhi(1,2))*mS(0,2)*mS(0,3)*mS(1,3)*mC(2,3);
-    mJ(5,2) = -sin(mPhi(0,3))*mC(0,2) + cos(mPhi(0,3))*mC(1,2)*mC(1,3)*mS(0,2) + cos(mPhi(0,3))*mS(1,2)*mS(0,2)*mS(1,3)*mC(2,3);
-    mJ(5,4) = -sin(mPhi(1,3))*mC(1,2)*mS(0,2)*mS(0,3) + cos(mPhi(1,3))*mS(1,2)*mS(0,2)*mS(0,3)*mC(2,3);
-    mJ(5,5) = -sin(mPhi(2,3))*mS(1,2)*mS(0,2)*mS(0,3)*mS(1,3);
-  }
-
-  if(iN>4) mJ.diag().ones();
-  // mJ.diag().ones();
-  return mJ;
+  return J;
 }
-
 
 arma::vec IndexesFinder(int iC, int iN){
   int l,m,iC_c = 0;
@@ -986,7 +1031,7 @@ arma::mat Jacobian_mvtMap(arma::vec vTheta_tilde, int iN, int iK){
 
   mJ.submat(iN,iN,2*iN-1,2*iN-1) = Jacobian_MapD(vSigma_tilde, iN);
   mJ.submat(2*iN,2*iN,iK-2,iK-2)     = Jacobian_MapR(vRho_tilde, iN);
-  mJ(iK-1,iK-1) = MapDeriv(dNu_tilde,dLowerShape,dUpperShape);
+  mJ(iK-1,iK-1) = MapNuDeriv(dNu_tilde, "mvt");
 
   return mJ;
 

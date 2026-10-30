@@ -1,3 +1,10 @@
+GAS_print_inference_note <- function(optimiser) {
+  if (isTRUE(optimiser$diagnostics$inference_ok) &&
+      isTRUE(optimiser$diagnostics$conditional_inference))
+    cat("\nConditional standard errors (fixed coefficients: ",
+        paste(optimiser$excluded_parameters, collapse = ", "), ").\n", sep = "")
+}
+
 setClass("uGASFit", representation(ModelInfo = "list", GASDyn = "list", Estimates = "list", Testing = "list",
                                    Data = "list"))
 setClass("mGASFit", representation(ModelInfo = "list", GASDyn = "list", Estimates = "list", Data = "list"))
@@ -72,12 +79,10 @@ setMethod("show", "uGASFit", function(object) {
 
   Inference = object@Estimates$Inference
 
-  vKappa = object@Estimates$lParList$vKappa
-  mB = object@Estimates$lParList$mB
-  vTheta_Tilde_Unc = solve(diag(iK) - mB) %*% vKappa
-
-  vTheta_Unc = c(MapParameters_univ(vTheta_Tilde_Unc, Dist, iK))
-  names(vTheta_Unc) = ParNames
+  # Average the mapped parameters for observed periods only; column T+1
+  # contains the next-period forecast.
+  vTheta_Avg = rowMeans(object@GASDyn$mTheta[, seq_len(iT), drop = FALSE])
+  names(vTheta_Avg) = ParNames
 
   elapsedTime = object@ModelInfo$elapsedTime
 
@@ -93,9 +98,10 @@ setMethod("show", "uGASFit", function(object) {
   cat(paste("\n------------------------------------------"))
   cat(paste("\nEstimates:\n"))
   print(Inference)
+  GAS_print_inference_note(object@Estimates$optimiser)
   cat(paste("\n------------------------------------------"))
-  cat(paste("\nUnconditional Parameters:\n"))
-  print(vTheta_Unc)
+  cat(paste("\nAverage Filtered Parameters:\n"))
+  print(vTheta_Avg)
   cat(paste("\n------------------------------------------"))
   cat(paste("\nInformation Criteria:\n"))
   print(IC)
@@ -122,12 +128,10 @@ setMethod("summary", "uGASFit", function(object) {
 
   Inference = object@Estimates$Inference
 
-  vKappa = object@Estimates$lParList$vKappa
-  mB = object@Estimates$lParList$mB
-  vTheta_Tilde_Unc = solve(diag(iK) - mB) %*% vKappa
-
-  vTheta_Unc = c(MapParameters_univ(vTheta_Tilde_Unc, Dist, iK))
-  names(vTheta_Unc) = ParNames
+  # Average the mapped parameters for observed periods only; column T+1
+  # contains the next-period forecast.
+  vTheta_Avg = rowMeans(object@GASDyn$mTheta[, seq_len(iT), drop = FALSE])
+  names(vTheta_Avg) = ParNames
 
   elapsedTime = object@ModelInfo$elapsedTime
 
@@ -162,9 +166,10 @@ setMethod("summary", "uGASFit", function(object) {
   cat(paste("\n------------------------------------------"))
   cat(paste("\nEstimates:\n"))
   print(Inference)
+  GAS_print_inference_note(object@Estimates$optimiser)
   cat(paste("\n------------------------------------------"))
-  cat(paste("\nUnconditional Parameters:\n"))
-  print(vTheta_Unc)
+  cat(paste("\nAverage Filtered Parameters:\n"))
+  print(vTheta_Avg)
   cat(paste("\n------------------------------------------"))
   cat(paste("\nInformation Criteria:\n"))
   print(IC)
@@ -193,12 +198,10 @@ setMethod("show", "mGASFit", function(object) {
 
   ParNames = FullNamesMulti(iN, Dist)
 
-  vKappa = object@Estimates$lParList$vKappa
-  mB = object@Estimates$lParList$mB
-  vTheta_Tilde_Unc = solve(diag(iK) - mB) %*% vKappa
-
-  vTheta_Unc = c(MapParameters_multi(vTheta_Tilde_Unc, Dist, iN, iK))
-  names(vTheta_Unc) = ParNames
+  # Average the mapped parameters for observed periods only; column T+1
+  # contains the next-period forecast.
+  vTheta_Avg = rowMeans(object@GASDyn$mTheta[, seq_len(iT), drop = FALSE])
+  names(vTheta_Avg) = ParNames
   Inference = object@Estimates$Inference
   elapsedTime = object@ModelInfo$elapsedTime
 
@@ -214,9 +217,10 @@ setMethod("show", "mGASFit", function(object) {
   cat(paste("\n------------------------------------------"))
   cat(paste("\nEstimates:\n"))
   print(Inference)
+  GAS_print_inference_note(object@Estimates$optimiser)
   cat(paste("\n------------------------------------------"))
-  cat(paste("\nUnconditional Parameters:\n"))
-  print(vTheta_Unc)
+  cat(paste("\nAverage Filtered Parameters:\n"))
+  print(vTheta_Avg)
   cat(paste("\n------------------------------------------"))
   cat(paste("\nInformation Criteria:\n"))
   print(IC)
@@ -242,12 +246,10 @@ setMethod("summary", "mGASFit", function(object) {
 
   ParNames = FullNamesMulti(iN, Dist)
 
-  vKappa = object@Estimates$lParList$vKappa
-  mB = object@Estimates$lParList$mB
-  vTheta_Tilde_Unc = solve(diag(iK) - mB) %*% vKappa
-
-  vTheta_Unc = c(MapParameters_multi(vTheta_Tilde_Unc, Dist, iN, iK))
-  names(vTheta_Unc) = ParNames
+  # Average the mapped parameters for observed periods only; column T+1
+  # contains the next-period forecast.
+  vTheta_Avg = rowMeans(object@GASDyn$mTheta[, seq_len(iT), drop = FALSE])
+  names(vTheta_Avg) = ParNames
   Inference = object@Estimates$Inference
   elapsedTime = object@ModelInfo$elapsedTime
 
@@ -263,9 +265,10 @@ setMethod("summary", "mGASFit", function(object) {
   cat(paste("\n------------------------------------------"))
   cat(paste("\nEstimates:\n"))
   print(Inference)
+  GAS_print_inference_note(object@Estimates$optimiser)
   cat(paste("\n------------------------------------------"))
-  cat(paste("\nUnconditional Parameters:\n"))
-  print(vTheta_Unc)
+  cat(paste("\nAverage Filtered Parameters:\n"))
+  print(vTheta_Avg)
   cat(paste("\n------------------------------------------"))
   cat(paste("\nInformation Criteria:\n"))
   print(IC)
@@ -542,10 +545,12 @@ setMethod("plot", signature(x = "mGASFit", y = "missing"), function(x, which = N
   if (is(mY, "xts")) {
     vDates = as.Date(index(mY))
   } else {
-    vDates = rownames(mY)
-    vDates = try(as.Date(vDates), silent = TRUE)
-    if (is.null(vDates) || is(vDates, "try-error")) {
-      vDates = 1:nrow(mY)
+    vDates <- try(as.Date(rownames(mY)), silent = TRUE)
+
+    if (inherits(vDates, "try-error") ||
+        length(vDates) != nrow(mY) ||
+        anyNA(vDates)) {
+      vDates <- seq_len(nrow(mY))
     }
   }
   PlotType = 1L
@@ -1129,7 +1134,9 @@ setMethod("coef", signature(object = "mGASSim"), .getCoef)
 
     mDraws = x@Draws
 
-    if (is.null(mDraws) & iH > 1) {
+    if (iH > 1L && (!isTRUE(x@Info$bReturnDraws) ||
+        !is.matrix(mDraws) || nrow(mDraws) != x@Info$iB ||
+        ncol(mDraws) != iH || any(!is.finite(mDraws)))) {
       stop("ReturnDraws = TRUE needs to be selected in the
             UniGASFor function for multistep ahead quantile evaluation.")
     }
@@ -1174,7 +1181,7 @@ setMethod("coef", signature(object = "mGASSim"), .getCoef)
 
   for (i in 1:nrow(mES)) {
     for (j in 1:ncol(mES)) {
-      mES[i, j] = adaptIntegrate(Quantiles, lowerLimit = 1e-7, upperLimit = probs[j],
+      mES[i, j] = adaptIntegrate(function(vProbs, mTheta, Dist) as.numeric(Quantiles(mTheta, Dist, vProbs)), lowerLimit = 1e-7, upperLimit = probs[j],
                             mTheta = t(mTheta[i, , drop = FALSE]), Dist = Dist)$integral
 
     }
@@ -1208,7 +1215,7 @@ setMethod("coef", signature(object = "mGASSim"), .getCoef)
 
     for (h in 1:iH) {
       for (j in 1:ncol(mES)) {
-        mES[h, j] = integrate(Quantiles, lower = 1e-7, upper = probs[j],
+        mES[h, j] = integrate(function(vProbs, mTheta, Dist) as.numeric(Quantiles(mTheta, Dist, vProbs)), lower = 1e-7, upper = probs[j],
                               mTheta = t(mTheta_tph[h, , drop = FALSE]), Dist = Dist)$value/probs[j]
       }
     }
@@ -1217,7 +1224,9 @@ setMethod("coef", signature(object = "mGASSim"), .getCoef)
 
     mDraws = object@Draws
 
-    if (is.null(mDraws) & iH > 1) {
+    if (iH > 1L && (!isTRUE(object@Info$bReturnDraws) ||
+        !is.matrix(mDraws) || nrow(mDraws) != object@Info$iB ||
+        ncol(mDraws) != iH || any(!is.finite(mDraws)))) {
       stop("ReturnDraws = TRUE needs to be selected in the
          UniGASFor function for multistep ahead quantile evaluation.")
     }
@@ -1228,7 +1237,7 @@ setMethod("coef", signature(object = "mGASSim"), .getCoef)
     ## one step ahead
     vTheta_tp1 = getForecast(object)[1, ,drop = FALSE]
     for (j in 1:ncol(mES)) {
-      mES[1, j] = integrate(Quantiles, lower = 1e-7, upper = probs[j],
+      mES[1, j] = integrate(function(vProbs, mTheta, Dist) as.numeric(Quantiles(mTheta, Dist, vProbs)), lower = 1e-7, upper = probs[j],
                             mTheta = t(vTheta_tp1), Dist = Dist)$value/probs[j]
     }
 

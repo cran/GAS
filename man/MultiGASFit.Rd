@@ -7,7 +7,8 @@
 	Estimate multivariate GAS models by Maximum Likelihood.
 }
 \usage{
-MultiGASFit(GASSpec, data, fn.optimizer = fn.optim, Compute.SE = TRUE)
+MultiGASFit(GASSpec, data, fn.optimizer = fn.optim, Compute.SE = TRUE,
+          SE.A.tol = 1e-5, Compute.Hessian = FALSE)
 }
 \arguments{
 \item{GASSpec}{
@@ -22,8 +23,23 @@ By default \code{fn.optimizer = fn.optim} where \link{fn.optim} is
 a wrapper to the \link{optim} function. See Details for user defined optimization routines.}
 %
 \item{Compute.SE}{\code{logical}. Should asymptotic Standard Errors be computed? By default \code{Compute.SE = TRUE}}
+\item{Compute.Hessian}{Logical, default \code{FALSE}. With the default
+optimizer, skip both the numerical Hessian used for curvature checks and
+the final returned Hessian. Set to \code{TRUE} to enable both. This option
+is independent of \code{Compute.SE}: OPG standard errors remain available
+without a Hessian. It applies to static initialization and the dynamic fit.}
+\item{SE.A.tol}{Finite nonnegative threshold for near-zero score loadings on
+ their reported coefficient scale. If the full OPG fails its numerical checks,
+ loadings with absolute value at most this threshold and their matching
+ persistence coefficients are held fixed for conditional inference.
+ The default is \code{1e-5}; zero disables this fallback.}
 }
 \details{
+For a fully static multivariate Gaussian model, the analytical sample-mean
+and sample-covariance MLE is used, with covariance divisor T. A full-rank
+sample covariance is required; the supplied optimizer is not called for
+this special case.
+
 Maximum Likelihood estimation of GAS models is an on-going research topic.
 General results are reported by Blasques et al. (2014b), Blasques et al. (2014a) and Harvey
 (2013), while results for specific models have been derived by Blasques et al. (2014c) and
@@ -39,16 +55,65 @@ coefficients contained in A and B. Further technical details are presented in Se
 The user is free to employ his/her own optimization routine via the \code{fn.optimizer} argument. \code{fn.optimizer}
 accepts a \code{function} object. The user provided optimizer has to satisfy strict requirements. The arguments of the
 \code{fn.optimizer} are : i) \code{par0} a vector of starting values, ii) \code{data} the data provided, iii) \code{GASSpec}
-an object of the class \link{uGASSpec}, and iv) \code{FUN} the likelihood function. The output of \code{fn.optimizer} has
-to be an object of the class \code{list} with four named elements: i) \code{pars}: a \code{numeric} vector
-where the estimated parameters are stored, ii) \code{value}: a \code{numeric} containing the value of the negative log likelihood
-evaluated at its minimum, iii) \code{hessian}, a \code{numeric} matrix containing the Hessian matrix evaluated at
-the minimum of the negative log likelihood, this is used for inferential purposes, and iv) \code{convergence} a \code{numeric} variable  reporting information about the convergence of the optimization. This quantity is printed by the
-\code{show()} and \code{summary()} methods. \code{convergence = 0} has to indicates successful completion.
+an object of the class \link{mGASSpec}, and iv) \code{FUN} the likelihood function. The output of \code{fn.optimizer} has
+to be a named list containing \code{pars}, the estimated numeric parameter
+vector; \code{value}, the summed negative log likelihood; and
+\code{convergence}, a numeric solver status with zero indicating success.
+An optional \code{hessian} element is retained as optimizer output but is not
+used for inference.
 
-The user is allowed to not include the last two elements of the output of the \code{fn.optimizer} function, that is, the values
-\code{hessian = NULL} and \code{convergence = NULL} are admissible. In the case of \code{hessian = NULL}, the Hessian matrix is
-evaluated numerically using the \link{hessian} function in the \code{numDeriv} package of Gilbert and Varadhan (2016). If the provided hessian is not positive definite, a try with the hessian evaluation used by the BFGS quasi-Newton implementation in the function \link{optim} is made.
+The \code{Compute.Hessian} option is forwarded to custom optimizers only
+when they explicitly declare an argument with that name. Legacy optimizers
+with the original four-argument interface remain supported; their internal
+Hessian calculations are controlled by the custom optimizer itself.
+The \code{fn.solnp} wrapper only controls whether SOLNP's internally maintained
+Hessian approximation is returned. Its internal optimization updates are
+unaffected. For a static multivariate Gaussian fit, \code{Compute.Hessian = TRUE}
+computes a numerical Hessian at the analytical MLE.
+
+
+When \code{Compute.SE = TRUE}, \code{numDeriv::jacobian} differentiates the
+vector of per-observation log likelihood contributions at the final estimate.
+The complete filter, including initialization, is rerun at each perturbed
+coefficient vector. If \eqn{S} is the resulting \eqn{T \times p} score matrix,
+the outer-product information matrix is \eqn{S' S} and the covariance estimate
+on the unrestricted optimizer scale is \eqn{(S' S)^{-1}}. There is no additional
+sample-size divisor. The delta method transforms this covariance to the
+reported coefficient scale. This is the OPG covariance for correctly specified
+maximum likelihood, not a sandwich covariance under misspecification.
+
+If the full OPG is numerically singular or otherwise fails its checks,
+\code{SE.A.tol} permits conditional inference after excluding near-zero
+\eqn{a_i} coefficients and their matching \eqn{b_i} coefficients. The principal
+OPG submatrix for the remaining coefficients is inverted only if it passes the
+same checks. Standard errors, test statistics and p-values for the excluded
+coefficients are \code{NA}. Their estimates are unchanged; no refitting occurs.
+The remaining standard errors condition on the excluded coefficients at their
+fitted values and do not represent the full joint covariance or uncertainty
+from selecting the reduced set. A warning and a note in the fit display
+identify conditional inference. If the reduced matrix also fails, all
+inferential entries remain \code{NA}.
+
+A missing convergence flag is recorded as unknown. A zero solver flag that
+fails the numerical gradient check is replaced by code 52. The original
+flag is retained in \code{Estimates$optimiser$solver_convergence}.
+The maximized objective is checked against the starting objective.
+Standard errors, test statistics and p-values are returned as \code{NA}
+when convergence checks fail or neither the full nor the permitted reduced OPG passes. No generalized inverse or automatic
+positive-definiteness repair is used. The coefficient estimates remain available.
+The score matrix, summed OPG matrix and its inverse are stored in
+\code{Estimates$optimiser$scores}, \code{Estimates$optimiser$opg} and
+\code{Estimates$optimiser$covariance}, respectively, when available. Under conditional inference, \code{covariance}
+is the reduced inverse embedded in a full-sized matrix with \code{NA} in
+excluded rows and columns. \code{inference_parameters} and
+\code{excluded_parameters} identify the retained and excluded coefficients.
+\code{opg} and \code{scores} still contain all coefficients.
+The \code{covariance_method} field is \code{"OPG"}; validation results are in
+\code{diagnostics}, including \code{full_information_ok}, \code{information_ok},
+\code{conditional_inference}, \code{se_a_tol} and \code{inference_ok}.
+With \code{Compute.SE = FALSE}, these matrices are not computed and
+\code{inference_ok} is false.
+
 
 By default, the \code{optim} optimizer with \code{method = "BFGS"} is employed.
 
@@ -63,17 +128,17 @@ Ardia D, Boudt K and Catania L (2016a).
 
 Blasques F, Koopman SJ, Lucas A (2014a).
 "Maximum Likelihood Estimation for Correctly Specified Generalized Autoregressive Score Models: Feedback Effects, Contraction Conditions and Asymptotic Properties." techreport TI 14-074/III, Tinbergen Institute.
-\url{https://www.tinbergen.nl/discussionpaper/?paper=2332}.
+\url{https://tinbergen.nl/discussionpaper/?paper=2332}.
 
 Blasques F, Koopman SJ, Lucas A (2014b).
 "Maximum Likelihood Estimation for Generalized Autoregressive Score Models."
 techreport TI 2014-029/III, Tinbergen Institute.
-\url{https://www.tinbergen.nl/discussionpaper/?paper=2286}.\cr
+\url{https://tinbergen.nl/discussionpaper/?paper=2286}.\cr
 
 Blasques F, Koopman SJ, Lucas A, Schaumburg J (2014c).
 "Spillover Dynamics for Systemic Risk Measurement using Spatial Financial Time Series Models."
 techreport TI 2014-103/III, Tinbergen Institute.
-\url{https://www.tinbergen.nl/discussionpaper/?paper=2369}.\cr
+\url{https://tinbergen.nl/discussionpaper/?paper=2369}.\cr
 
 Creal D, Koopman SJ, Lucas A (2013).
 "Generalized Autoregressive Score Models with Applications."
@@ -99,7 +164,7 @@ Ph.D. thesis, Stanford University.
 \author{Leopoldo Catania}
 %
 \examples{
-\dontrun{
+\donttest{
 # Specify an GAS model with multivariate Student-t
 # conditional distribution and time-varying scales and correlations
 

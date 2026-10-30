@@ -37,6 +37,7 @@ International Journal of Forecasting, 32(3), 875-887.
 }
 \author{Leopoldo Catania}
 \examples{
+\donttest{
 # Specify an univariate GAS model with Student-t
 # conditional distribution and time-varying location, scale and shape parameter
 
@@ -66,4 +67,16 @@ Fit = UniGASFit(GASSpec, InsampleData)
 Forecast = UniGASFor(Fit, Roll = TRUE, out = OutSampleData)
 
 Forecast
+}
+}
+
+\details{
+
+Parameter point forecasts retain an H by K matrix structure, including
+H=1 and K=1. For non-rolling forecasts beyond one step,
+\code{quantile()} and \code{ES()} require simulations retained with
+\code{ReturnDraws = TRUE}; otherwise they report an explanatory error.
+Rolling one-step forecasts and non-rolling one-step forecasts do not
+require retained simulations for these methods.
+
 }

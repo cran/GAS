@@ -22,6 +22,7 @@ Default value\code{Dist = "norm"}.}
 Possible choices are \code{"Identity"}, \code{"Inv"},
  \code{"InvSqrt"}. Note that, for some distribution only \code{ScalingType = "Identity"} is supported, see the function \link{DistInfo}.
  When  \code{ScalingType = "InvSqrt"} the inverse of the cholesky decomposition of the information matrix is used.
+ Both \code{snorm} and \code{sstd} support all three mechanisms using their full analytic Fisher information matrices.
  Default value \code{ScalingType = "Identity"}.}
 %
 \item{GASPar}{
@@ -37,6 +38,15 @@ See the \link{DistInfo} function for more details.}
 %
 }
 \details{
+
+For \code{skellam}, \code{location} controls the mean-state coordinate
+\eqn{f_1=\mu}, whereas \code{scale} controls
+\eqn{f_2=\tfrac12\log(v^2-\mu^2)}. Thus a dynamic mean may change the
+variance even when \code{scale = FALSE}. See
+\code{\link{UniMapParameters}}. Coefficients for the old Skellam
+state parameterization are not interchangeable with these coefficients.
+
+
 	All the information regarding the supported univariate conditional distributions
 	can be investigated using the \link{DistInfo} function.
 }

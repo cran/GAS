@@ -40,52 +40,28 @@ double rALD(double dTheta, double dSigma, double dKappa){
   double dU1 = Rf_runif(0.0, 1.0);
   double dU2 = Rf_runif(0.0, 1.0);
 
-  double dY = dTheta + dSigma * ( dKappa*log(dU1) - log(dU2)/dKappa );
+  double dY = dTheta + dSigma / sqrt(2.0) * (dKappa * log(dU1) - log(dU2) / dKappa);
 
   return dY;
 
 }
+
+
 double qALD(double dP, double dTheta, double dSigma, double dKappa,
             double lower=-150, double upper=150, int maxiter=1e4, double eps=1e-7) {
-  double a=lower;
-  double b=upper;
-
-  double x=lower;
-  double x1=upper;
-  int iter = 1;
-  double fa,fx;
-  //check
-  fa = pALD(a,  dTheta, dSigma, dKappa) - dP;
-  fx = pALD(x1, dTheta, dSigma, dKappa) - dP;
-
-  if(fa*fx>0){
-    Rprintf("Bisection Error: upper and lower function evaluations have same sign");
-    return NA_LOGICAL;
-  }
-
-  do
-  {
-    fa=pALD(a, dTheta, dSigma, dKappa) - dP;
-    fx=pALD(x, dTheta, dSigma, dKappa) - dP;
-
-    if (fa*fx < 0){
-      b=x;
-    }else{
-      a=x;
-    }
-
-    x1=(a+b)/2.0;
-    iter++;
-
-    if (abs3(x1-x) < eps)
-    {
-      return x1;
-    }
-    x=x1;
-  }while(iter<maxiter);
-
-  Rprintf("Bisection Warning: Maximum numeber of iteration reached");
-  return NA_LOGICAL;
+  // Legacy bisection arguments are retained for source compatibility only.
+  if (!R_FINITE(dP) || dP < 0 || dP > 1 || !R_FINITE(dTheta) ||
+      !R_FINITE(dSigma) || dSigma <= 0 || !R_FINITE(dKappa) ||
+      dKappa <= 0) return NA_REAL;
+  if (dP == 0) return R_NegInf;
+  if (dP == 1) return R_PosInf;
+  const double logk = log(dKappa);
+  const double logp0 = -log1p(exp(-2*logk));
+  const double log1mp0 = -log1p(exp(2*logk));
+  if (dP == exp(logp0)) return dTheta;
+  if (log(dP) <= logp0)
+    return dTheta + dSigma*dKappa/sqrt(2.0)*(log(dP)-logp0);
+  return dTheta - dSigma/(sqrt(2.0)*dKappa)*(log1p(-dP)-log1mp0);
 }
 arma::vec mALD(double dTheta, double dSigma, double dKappa){
 
@@ -94,8 +70,7 @@ arma::vec mALD(double dTheta, double dSigma, double dKappa){
   vMoments(0) = dTheta + dSigma*(1.0/dKappa - dKappa)/pow(2.0, 0.5);
   vMoments(1) = pow(dSigma,2.0)*(1.0/pow(dKappa,2.0) + pow(dKappa,2.0))/2.0;
   vMoments(2) = 2.0*(1.0/pow(dKappa, 3.0) - pow(dKappa, 3.0))/pow(1.0/pow(dKappa,2.0) + pow(dKappa, 2.0), 1.5);
-  vMoments(3) = 6.0 - 12.0/pow( 1.0/pow(dKappa, 2.0) + pow(dKappa, 2.0)  , 2.0);
-
+  vMoments(3) = 9.0 - 12.0 / pow(pow(dKappa, -2.0) + pow(dKappa, 2.0), 2.0);
   return vMoments;
 }
 arma::vec ald_Score(double dY, arma::vec vTheta){

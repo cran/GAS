@@ -15,28 +15,57 @@ arma::vec GASInnovation_univ(double dY, arma::vec vTheta, arma::vec vTheta_tilde
   arma::mat mJ           = MapParametersJacobian_univ(vTheta_tilde, Dist, iK);
   arma::vec Score_tilde  = mJ.t() * vScore ;
 
-  if(ScalingType=="Identity") {
+  if (ScalingType == "Identity") {
 
     vS_tilde = Score_tilde;
-  }
-  if(ScalingType=="Inv") {
 
+  } else if (ScalingType == "Inv" || ScalingType == "InvSqrt") {
+
+    // Fisher information in the original parameterization.
     arma::mat mIM = IM_univ(vTheta, Dist);
 
-    arma::mat mIM_Tilde_inv = mJ.t() * pinv(mIM) * mJ;
+    // Fisher information in the unconstrained state parameterization.
+    arma::mat mIM_tilde = mJ.t() * mIM * mJ;
 
-    vS_tilde = mIM_Tilde_inv * Score_tilde;
+    // Upper-triangular factor U satisfying I_f = U.t() * U.
+    arma::mat U;
+
+    if (!mIM_tilde.is_finite() || !arma::chol(U, mIM_tilde)) {
+      Rcpp::stop(
+        "Score scaling requires a finite, positive-definite "
+        "transformed Fisher information matrix."
+      );
+    }
+
+    // Whiten the transformed score: z = inverse(U.t()) * s_f.
+    arma::vec z = arma::solve(
+      arma::trimatl(U.t()),
+      Score_tilde,
+      arma::solve_opts::no_approx
+    );
+
+    if (ScalingType == "Inv") {
+
+      // inverse(I_f) * s_f = inverse(U) * inverse(U.t()) * s_f.
+      vS_tilde = arma::solve(
+        arma::trimatu(U),
+        z,
+        arma::solve_opts::no_approx
+      );
+
+    } else {
+
+      // Inverse-square-root scaling using Cholesky whitening.
+      vS_tilde = z;
+
+    }
+
+  } else {
+
+    Rcpp::stop("Unknown ScalingType.");
 
   }
-  if(ScalingType=="InvSqrt") {
 
-    arma::mat mIM= IM_univ(vTheta,Dist);
-
-    arma::mat K = chol(mIM);
-
-    vS_tilde = pinv(K) * Score_tilde;
-
-  }
   //
   vS_tilde = Thresholding_vec(vS_tilde, 1e5);
   vS_tilde = NaN2Zero(vS_tilde);
@@ -50,6 +79,21 @@ arma::vec GASInnovation_multi(arma::vec vY, arma::vec vTheta, arma::vec vTheta_t
   arma::vec vScore   = Score_multi(vY, vTheta, iN, Dist);
   arma::mat mJ       = MapParametersJacobian_multi(vTheta_tilde, Dist, iN, iK);
   arma::vec vS_tilde = mJ.t() * vScore ;
+
+  if (ScalingType == "Inv" || ScalingType == "InvSqrt") {
+    arma::mat information = mJ.t() * IM_multi(vTheta, Dist, iN) * mJ;
+    arma::mat U;
+    if (!information.is_finite() || !arma::chol(U, information))
+      Rcpp::stop("Score scaling requires a finite, positive-definite transformed Fisher information matrix.");
+    arma::vec z = arma::solve(arma::trimatl(U.t()), vS_tilde,
+                              arma::solve_opts::no_approx);
+    if (ScalingType == "Inv")
+      vS_tilde = arma::solve(arma::trimatu(U), z, arma::solve_opts::no_approx);
+    else
+      vS_tilde = z;
+  } else if (ScalingType != "Identity") {
+    Rcpp::stop("Unknown ScalingType.");
+  }
 
   vS_tilde = Thresholding_vec(vS_tilde, 1e5);
   vS_tilde = NaN2Zero(vS_tilde);

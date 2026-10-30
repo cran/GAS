@@ -10,7 +10,6 @@
 \alias{getMoments,uGASFit-method}
 \alias{getObs,uGASFit-method}
 \alias{pit,uGASFit-method}
-\alias{plot,uGASFit,missing-method}
 \alias{quantile,uGASFit-method}
 \alias{ES,uGASFit-method}
 \alias{show,uGASFit-method}
@@ -50,6 +49,12 @@ inferential results for the estimated parameters.}
 \item{\code{Testing}:}{Statistical tests results.}
 }
 }
+\details{
+The \code{show} and \code{summary} methods report \emph{Average Filtered
+Parameters}: the arithmetic average of each mapped distribution parameter
+in \code{GASDyn$mTheta} over the first \code{ModelInfo$iT} columns.
+The final column, containing the next-period forecast, is excluded.
+}
 \section{Methods}{
 \itemize{
 \item \code{show} \code{signature(object = 'uGASFit')}: print object information.
@@ -73,3 +78,9 @@ residuals are standardized by the filtered standard deviation. By default \code{
 }
 \author{Leopoldo Catania}
 \keyword{classes}
+
+\note{
+For Bernoulli, Poisson, negative-binomial and Skellam models, stored
+PITs are randomized. Set \code{set.seed()} before constructing the
+object for reproducibility. See \code{\link{PIT_test}}.
+}
